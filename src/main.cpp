@@ -53,12 +53,14 @@ int main(int argc, char* argv[]) {
 
   check_arguments(argc, argv);
 
+  // for this project, this is "obj_pose-laser-radar_synthetic-input.txt"
   string in_file_name_ = argv[1];
   ifstream in_file_(in_file_name_.c_str(), ifstream::in);
 
   string out_file_name_ = argv[2];
   ofstream out_file_(out_file_name_.c_str(), ofstream::out);
 
+  // make sure we can open input and output files.
   check_files(in_file_, in_file_name_, out_file_, out_file_name_);
 
   vector<MeasurementPackage> measurement_pack_list;
@@ -78,6 +80,7 @@ int main(int argc, char* argv[]) {
 
     // reads first element from the current line
     iss >> sensor_type;
+    // for c++ == 0 means True.
     if (sensor_type.compare("L") == 0) {
       // LASER MEASUREMENT
 
@@ -91,6 +94,7 @@ int main(int argc, char* argv[]) {
       meas_package.raw_measurements_ << x, y;
       iss >> timestamp;
       meas_package.timestamp_ = timestamp;
+      // push_back will add a new element at the end.
       measurement_pack_list.push_back(meas_package);
     } else if (sensor_type.compare("R") == 0) {
       // RADAR MEASUREMENT
@@ -133,6 +137,7 @@ int main(int argc, char* argv[]) {
 
   //Call the EKF-based fusion
   size_t N = measurement_pack_list.size();
+
   for (size_t k = 0; k < N; ++k) {
     // start filtering from the second frame (the speed is unknown in the first
     // frame)
@@ -165,11 +170,14 @@ int main(int argc, char* argv[]) {
 
     estimations.push_back(fusionEKF.ekf_.x_);
     ground_truth.push_back(gt_pack_list[k].gt_values_);
+
   }
 
   // compute the accuracy (RMSE)
   Tools tools;
+
   cout << "Accuracy - RMSE:" << endl << tools.CalculateRMSE(estimations, ground_truth) << endl;
+  //cout << "RMSE" << endl << tools.CalculateRMSE(estimations, ground_truth) << endl;
 
   // close files
   if (out_file_.is_open()) {
