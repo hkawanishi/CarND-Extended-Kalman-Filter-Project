@@ -89,22 +89,15 @@ void FusionEKF::ProcessMeasurement(const MeasurementPackage &measurement_pack) {
       // make sure phi is between -pi to pi.
       float phi_orig = measurement_pack.raw_measurements_[1];
 
-      if (phi_orig < -M_PI){
-        while (phi_orig < -M_PI){
-          phi_orig += 2.0*M_PI;
-        }
-      }
-      if (phi_orig > M_PI){
-        while (phi_orig > M_PI){
-          phi_orig -= 2.0*M_PI;
-        }
-      }
       // set velocity equals zero.
-      float px_init, py_init;
+      float px_init, py_init, vx_init, vy_init;
+      float ro_dot = measurement_pack.raw_measurements_[2];
       px_init = measurement_pack.raw_measurements_[0]*cos(phi_orig);
       py_init = measurement_pack.raw_measurements_[0]*sin(phi_orig);
+      vx_init = ro_dot*cos(phi_orig);
+      vy_init = ro_dot*sin(phi_orig);
 
-      ekf_.x_ << px_init, py_init, 0, 0;
+      ekf_.x_ << px_init, py_init, vx_init, vy_init;
     }
     else if (measurement_pack.sensor_type_ == MeasurementPackage::LASER) {
       /**
